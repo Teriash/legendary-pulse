@@ -5,6 +5,8 @@
 // @version      1.10.0
 // @description  Notyfikator legend
 // @author       Teriash
+// @updateURL    https://github.com/Teriash/legendary-pulse/raw/refs/heads/main/legendary-pulse.user.js
+// @downloadURL  https://github.com/Teriash/legendary-pulse/raw/refs/heads/main/legendary-pulse.user.js
 // @match        https://*.margonem.pl/*
 // @match        https://*.margonem.com/*
 // @grant        GM_getValue
