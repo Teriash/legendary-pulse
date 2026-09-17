@@ -500,7 +500,12 @@
         color: rgba(255,255,255,.84);
       }
 
-      .lp-static-colors-section.disabled {
+      .lp-static-colors-section.disabled > .lp-setting {
+        opacity: 1;
+        color: #eceaf7;
+      }
+
+      .lp-static-colors-section.disabled .lp-color-mode-row {
         opacity: .42;
       }
 
@@ -1264,20 +1269,28 @@
       const lootColorInput = panel.querySelector("#lp-loot-color");
       const itemColorInput = panel.querySelector("#lp-item-color");
 
-      animateColorsInput.addEventListener("click", e => {
-        e.preventDefault();
-        state.settings.animateColors = true;
-        state.settings.staticColors = false;
+      animateColorsInput.addEventListener("change", e => {
+        if (e.target.checked) {
+          state.settings.animateColors = true;
+          state.settings.staticColors = false;
+        } else {
+          e.target.checked = true;
+          return;
+        }
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
       });
 
-      staticColorsInput.addEventListener("click", e => {
-        e.preventDefault();
-        state.settings.staticColors = true;
-        state.settings.animateColors = false;
-        state.settings.useCustomPalette = false;
+      staticColorsInput.addEventListener("change", e => {
+        if (e.target.checked) {
+          state.settings.staticColors = true;
+          state.settings.animateColors = false;
+          state.settings.useCustomPalette = false;
+        } else {
+          e.target.checked = true;
+          return;
+        }
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
