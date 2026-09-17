@@ -1239,7 +1239,8 @@
 
       useCustomPaletteInput.addEventListener("change", e => {
         if (state.settings.staticColors) {
-          e.target.checked = false;
+          e.target.checked = !!state.settings.useCustomPalette;
+          e.target.disabled = true;
           return;
         }
         state.settings.useCustomPalette = e.target.checked;
