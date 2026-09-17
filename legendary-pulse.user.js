@@ -2,8 +2,8 @@
 // @name         Legendary Pulse
 // @namespace    https://margonem.pl/
 // @namespace    https://margonem.com/
-// @version      1.10.1
-// @description  Notyfikator legendd
+// @version      1.10.0
+// @description  Notyfikator legend
 // @author       Teriash
 // @updateURL    https://github.com/Teriash/legendary-pulse/raw/refs/heads/main/legendary-pulse.user.js
 // @downloadURL  https://github.com/Teriash/legendary-pulse/raw/refs/heads/main/legendary-pulse.user.js
