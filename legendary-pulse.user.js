@@ -2,7 +2,7 @@
 // @name         Legendary Pulse
 // @namespace    https://margonem.pl/
 // @namespace    https://margonem.com/
-// @version      1.10.0
+// @version      1.10.1
 // @description  Notyfikator legend
 // @author       Teriash
 // @updateURL    https://github.com/Teriash/legendary-pulse/raw/refs/heads/main/legendary-pulse.user.js
@@ -1017,7 +1017,7 @@
           </div>
           ${checkboxRow("screenCrack", "Pęknięcie ekranu")}
           ${checkboxRow("legendaryLightning", "Błyskawice do legendy")}
-          ${checkboxRow("screenFlash", "Błysk ekranu")}
+          ${checkboxRow("screenFlash", "Obramowanie mapy")}
           ${checkboxRow("itemGlow", "Podświetlenie itemu")}
           ${checkboxRow("centerMessage", "Wiadomość ekranowa")}
           ${checkboxRow("clanMessage", "Wiadomość klanowa")}
