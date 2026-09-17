@@ -2,7 +2,7 @@
 // @name         Legendary Pulse
 // @namespace    https://margonem.pl/
 // @namespace    https://margonem.com/
-// @version      1.10.1
+// @version      1.10.0
 // @description  Notyfikator legend
 // @author       Teriash
 // @updateURL    https://github.com/Teriash/legendary-pulse/raw/refs/heads/main/legendary-pulse.user.js
@@ -1058,6 +1058,8 @@
               </label>
             </div>
           </div>
+
+          <div class="lp-palette-title" style="margin-top:8px;">Statyczne kolory podświetlenia</div>
 
           <div class="lp-color-mode-row">
             <span class="lp-setting-label">Obramowanie mapy</span>
