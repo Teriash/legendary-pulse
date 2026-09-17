@@ -91,6 +91,21 @@
     currentSoundContext: null
   };
 
+  function normalizeColorModes() {
+    if (state.settings.useCustomPalette) {
+      state.settings.animateColors = false;
+      state.settings.staticColors = false;
+    } else if (state.settings.staticColors) {
+      state.settings.animateColors = false;
+      state.settings.useCustomPalette = false;
+    } else if (state.settings.animateColors) {
+      state.settings.staticColors = false;
+      state.settings.useCustomPalette = false;
+    }
+  }
+
+  normalizeColorModes();
+
   function readLocalWorldSettings() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -1224,6 +1239,10 @@
 
       useCustomPaletteInput.addEventListener("change", e => {
         state.settings.useCustomPalette = e.target.checked;
+        if (e.target.checked) {
+          state.settings.animateColors = false;
+          state.settings.staticColors = false;
+        }
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
@@ -1245,7 +1264,10 @@
 
       animateColorsInput.addEventListener("change", e => {
         state.settings.animateColors = e.target.checked;
-        if (e.target.checked) state.settings.staticColors = false;
+        if (e.target.checked) {
+          state.settings.useCustomPalette = false;
+          state.settings.staticColors = false;
+        }
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
@@ -1253,7 +1275,10 @@
 
       staticColorsInput.addEventListener("change", e => {
         state.settings.staticColors = e.target.checked;
-        if (e.target.checked) state.settings.animateColors = false;
+        if (e.target.checked) {
+          state.settings.animateColors = false;
+          state.settings.useCustomPalette = false;
+        }
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
@@ -1404,7 +1429,7 @@
     if (mapColorInput) mapColorInput.value = state.settings.mapColor;
     if (lootColorInput) lootColorInput.value = state.settings.lootColor;
     if (itemColorInput) itemColorInput.value = state.settings.itemColor;
-    paletteSection?.classList.toggle("disabled", !state.settings.animateColors);
+    paletteSection?.classList.toggle("disabled", !state.settings.animateColors || state.settings.useCustomPalette);
     staticColorsSection?.classList.toggle("disabled", !state.settings.staticColors);
 
     const glowSizeSync = panel.querySelector("#lp-glow-size");
