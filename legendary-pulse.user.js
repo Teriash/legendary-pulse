@@ -92,14 +92,14 @@
   };
 
   function normalizeColorModes() {
-    if (state.settings.useCustomPalette) {
-      state.settings.animateColors = false;
-      state.settings.staticColors = false;
-    } else if (state.settings.staticColors) {
+    if (state.settings.staticColors) {
       state.settings.animateColors = false;
       state.settings.useCustomPalette = false;
-    } else if (state.settings.animateColors) {
-      state.settings.staticColors = false;
+    } else {
+      state.settings.animateColors = true;
+    }
+
+    if (!state.settings.animateColors) {
       state.settings.useCustomPalette = false;
     }
   }
@@ -1240,7 +1240,7 @@
       useCustomPaletteInput.addEventListener("change", e => {
         state.settings.useCustomPalette = e.target.checked;
         if (e.target.checked) {
-          state.settings.animateColors = false;
+          state.settings.animateColors = true;
           state.settings.staticColors = false;
         }
         saveSettings();
@@ -1265,8 +1265,10 @@
       animateColorsInput.addEventListener("change", e => {
         state.settings.animateColors = e.target.checked;
         if (e.target.checked) {
-          state.settings.useCustomPalette = false;
           state.settings.staticColors = false;
+        } else if (!state.settings.staticColors) {
+          state.settings.staticColors = true;
+          state.settings.useCustomPalette = false;
         }
         saveSettings();
         updateCssVars();
@@ -1278,6 +1280,8 @@
         if (e.target.checked) {
           state.settings.animateColors = false;
           state.settings.useCustomPalette = false;
+        } else if (!state.settings.animateColors) {
+          state.settings.animateColors = true;
         }
         saveSettings();
         updateCssVars();
@@ -1412,7 +1416,7 @@
 
     if (useCustomPaletteInput) {
       useCustomPaletteInput.checked = !!state.settings.useCustomPalette;
-      useCustomPaletteInput.disabled = !!state.settings.staticColors || !!state.settings.animateColors;
+      useCustomPaletteInput.disabled = !state.settings.animateColors;
     }
     customPaletteInputs.forEach((input, index) => {
       if (input) input.value = state.settings[`customPalette${index + 1}`];
@@ -1429,16 +1433,16 @@
 
     if (animateColorsInput) {
       animateColorsInput.checked = !!state.settings.animateColors;
-      animateColorsInput.disabled = !!state.settings.staticColors || !!state.settings.useCustomPalette;
+      animateColorsInput.disabled = false;
     }
     if (staticColorsInput) {
       staticColorsInput.checked = !!state.settings.staticColors;
-      staticColorsInput.disabled = !!state.settings.animateColors || !!state.settings.useCustomPalette;
+      staticColorsInput.disabled = false;
     }
     if (mapColorInput) mapColorInput.value = state.settings.mapColor;
     if (lootColorInput) lootColorInput.value = state.settings.lootColor;
     if (itemColorInput) itemColorInput.value = state.settings.itemColor;
-    paletteSection?.classList.toggle("disabled", !state.settings.animateColors || state.settings.useCustomPalette);
+    paletteSection?.classList.toggle("disabled", !state.settings.animateColors);
     staticColorsSection?.classList.toggle("disabled", !state.settings.staticColors);
 
     const glowSizeSync = panel.querySelector("#lp-glow-size");
