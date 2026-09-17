@@ -56,6 +56,7 @@
     pollInterval: 180,
     palette: "legendary",
     animateColors: true,
+    staticColors: false,
     useCustomPalette: false,
     customPalette1: "#ffd35a",
     customPalette2: "#ff9f1c",
@@ -1059,8 +1060,12 @@
             </div>
           </div>
 
-          <div class="lp-palette-title" style="margin-top:8px;">Statyczne kolory podświetlenia</div>
+          <label class="lp-setting" style="margin-top:8px;">
+            <span>Statyczne kolory podświetlenia</span>
+            <input id="lp-static-colors" type="checkbox" ${state.settings.staticColors ? "checked" : ""}>
+          </label>
 
+          <div id="lp-static-colors-section">
           <div class="lp-color-mode-row">
             <span class="lp-setting-label">Obramowanie mapy</span>
             <input id="lp-map-color" class="lp-color-picker" type="color" value="${esc(state.settings.mapColor)}">
@@ -1074,6 +1079,7 @@
           <div class="lp-color-mode-row">
             <span class="lp-setting-label">Obramowanie itemu</span>
             <input id="lp-item-color" class="lp-color-picker" type="color" value="${esc(state.settings.itemColor)}">
+          </div>
           </div>
 
           <div class="lp-palette-section">
@@ -1224,12 +1230,24 @@
       });
 
       const animateColorsInput = panel.querySelector("#lp-animate-colors");
+      const staticColorsInput = panel.querySelector("#lp-static-colors");
       const mapColorInput = panel.querySelector("#lp-map-color");
       const lootColorInput = panel.querySelector("#lp-loot-color");
       const itemColorInput = panel.querySelector("#lp-item-color");
 
       animateColorsInput.addEventListener("change", e => {
         state.settings.animateColors = e.target.checked;
+        if (e.target.checked) state.settings.staticColors = false;
+        if (!e.target.checked && !state.settings.staticColors) state.settings.staticColors = true;
+        saveSettings();
+        updateCssVars();
+        syncUiFromSettings();
+      });
+
+      staticColorsInput.addEventListener("change", e => {
+        state.settings.staticColors = e.target.checked;
+        if (e.target.checked) state.settings.animateColors = false;
+        if (!e.target.checked && !state.settings.animateColors) state.settings.animateColors = true;
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
@@ -1368,16 +1386,26 @@
     customPaletteGrid?.classList.toggle("disabled", !state.settings.useCustomPalette);
 
     const animateColorsInput = panel.querySelector("#lp-animate-colors");
+    const staticColorsInput = panel.querySelector("#lp-static-colors");
+    const staticColorsSection = panel.querySelector("#lp-static-colors-section");
     const mapColorInput = panel.querySelector("#lp-map-color");
     const lootColorInput = panel.querySelector("#lp-loot-color");
     const itemColorInput = panel.querySelector("#lp-item-color");
     const paletteSection = panel.querySelector(".lp-palette-section");
 
+    if (!state.settings.animateColors && !state.settings.staticColors) state.settings.staticColors = true;
+    if (state.settings.animateColors && state.settings.staticColors) state.settings.staticColors = false;
+
     if (animateColorsInput) animateColorsInput.checked = !!state.settings.animateColors;
+    if (staticColorsInput) staticColorsInput.checked = !!state.settings.staticColors;
     if (mapColorInput) mapColorInput.value = state.settings.mapColor;
     if (lootColorInput) lootColorInput.value = state.settings.lootColor;
     if (itemColorInput) itemColorInput.value = state.settings.itemColor;
     paletteSection?.classList.toggle("disabled", !state.settings.animateColors);
+    if (staticColorsSection) {
+      staticColorsSection.style.opacity = state.settings.staticColors ? "1" : ".42";
+      staticColorsSection.style.pointerEvents = state.settings.staticColors ? "auto" : "none";
+    }
 
     const glowSizeSync = panel.querySelector("#lp-glow-size");
     const glowSizeValueSync = panel.querySelector("#lp-glow-size-value");
@@ -1421,7 +1449,7 @@
       document.documentElement.style.setProperty(`--lp-${prefix}4`, colors[3]);
     };
 
-    if (state.settings.animateColors) {
+    if (state.settings.animateColors && !state.settings.staticColors) {
       setSeries("map", palette);
       setSeries("loot", palette);
       setSeries("item", palette);
@@ -3199,6 +3227,9 @@
     if (typeof state.settings.legendaryLightning !== "boolean") state.settings.legendaryLightning = true;
     state.settings.screenShakeStrength = Math.max(10, Math.min(200, Number(state.settings.screenShakeStrength ?? 100)));
     if (typeof state.settings.animateColors !== "boolean") state.settings.animateColors = true;
+    if (typeof state.settings.staticColors !== "boolean") state.settings.staticColors = !state.settings.animateColors;
+    if (state.settings.animateColors && state.settings.staticColors) state.settings.staticColors = false;
+    if (!state.settings.animateColors && !state.settings.staticColors) state.settings.staticColors = true;
     if (typeof state.settings.useCustomPalette !== "boolean") state.settings.useCustomPalette = false;
     for (let i = 1; i <= 3; i++) {
       const key = `customPalette${i}`;
