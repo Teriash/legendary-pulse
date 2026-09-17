@@ -94,13 +94,8 @@
   function normalizeColorModes() {
     if (state.settings.staticColors) {
       state.settings.animateColors = false;
-      state.settings.useCustomPalette = false;
     } else {
       state.settings.animateColors = true;
-    }
-
-    if (!state.settings.animateColors) {
-      state.settings.useCustomPalette = false;
     }
   }
 
@@ -1286,7 +1281,6 @@
         if (e.target.checked) {
           state.settings.staticColors = true;
           state.settings.animateColors = false;
-          state.settings.useCustomPalette = false;
         } else {
           e.target.checked = true;
           return;
