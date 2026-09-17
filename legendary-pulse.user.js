@@ -1238,11 +1238,13 @@
       ];
 
       useCustomPaletteInput.addEventListener("change", e => {
-        state.settings.useCustomPalette = e.target.checked;
-        if (e.target.checked) {
-          state.settings.animateColors = true;
-          state.settings.staticColors = false;
+        if (state.settings.staticColors) {
+          e.target.checked = false;
+          return;
         }
+        state.settings.useCustomPalette = e.target.checked;
+        state.settings.animateColors = true;
+        state.settings.staticColors = false;
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
@@ -1262,27 +1264,20 @@
       const lootColorInput = panel.querySelector("#lp-loot-color");
       const itemColorInput = panel.querySelector("#lp-item-color");
 
-      animateColorsInput.addEventListener("change", e => {
-        state.settings.animateColors = e.target.checked;
-        if (e.target.checked) {
-          state.settings.staticColors = false;
-        } else if (!state.settings.staticColors) {
-          state.settings.staticColors = true;
-          state.settings.useCustomPalette = false;
-        }
+      animateColorsInput.addEventListener("click", e => {
+        e.preventDefault();
+        state.settings.animateColors = true;
+        state.settings.staticColors = false;
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
       });
 
-      staticColorsInput.addEventListener("change", e => {
-        state.settings.staticColors = e.target.checked;
-        if (e.target.checked) {
-          state.settings.animateColors = false;
-          state.settings.useCustomPalette = false;
-        } else if (!state.settings.animateColors) {
-          state.settings.animateColors = true;
-        }
+      staticColorsInput.addEventListener("click", e => {
+        e.preventDefault();
+        state.settings.staticColors = true;
+        state.settings.animateColors = false;
+        state.settings.useCustomPalette = false;
         saveSettings();
         updateCssVars();
         syncUiFromSettings();
@@ -1416,7 +1411,7 @@
 
     if (useCustomPaletteInput) {
       useCustomPaletteInput.checked = !!state.settings.useCustomPalette;
-      useCustomPaletteInput.disabled = !state.settings.animateColors;
+      useCustomPaletteInput.disabled = !!state.settings.staticColors;
     }
     customPaletteInputs.forEach((input, index) => {
       if (input) input.value = state.settings[`customPalette${index + 1}`];
