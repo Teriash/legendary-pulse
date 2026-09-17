@@ -1410,7 +1410,10 @@
     ];
     const customPaletteGrid = panel.querySelector(".lp-custom-palette-grid");
 
-    if (useCustomPaletteInput) useCustomPaletteInput.checked = !!state.settings.useCustomPalette;
+    if (useCustomPaletteInput) {
+      useCustomPaletteInput.checked = !!state.settings.useCustomPalette;
+      useCustomPaletteInput.disabled = !!state.settings.staticColors || !!state.settings.animateColors;
+    }
     customPaletteInputs.forEach((input, index) => {
       if (input) input.value = state.settings[`customPalette${index + 1}`];
     });
@@ -1424,8 +1427,14 @@
     const itemColorInput = panel.querySelector("#lp-item-color");
     const paletteSection = panel.querySelector(".lp-palette-section");
 
-    if (animateColorsInput) animateColorsInput.checked = !!state.settings.animateColors;
-    if (staticColorsInput) staticColorsInput.checked = !!state.settings.staticColors;
+    if (animateColorsInput) {
+      animateColorsInput.checked = !!state.settings.animateColors;
+      animateColorsInput.disabled = !!state.settings.staticColors || !!state.settings.useCustomPalette;
+    }
+    if (staticColorsInput) {
+      staticColorsInput.checked = !!state.settings.staticColors;
+      staticColorsInput.disabled = !!state.settings.animateColors || !!state.settings.useCustomPalette;
+    }
     if (mapColorInput) mapColorInput.value = state.settings.mapColor;
     if (lootColorInput) lootColorInput.value = state.settings.lootColor;
     if (itemColorInput) itemColorInput.value = state.settings.itemColor;
@@ -1461,11 +1470,18 @@
     updateGlowSize();
     const palette = getActivePaletteColors();
 
-    state.settings.accent = palette[0];
-    state.settings.accent2 = palette[1];
+    const uiAccent = state.settings.staticColors
+      ? (state.settings.mapColor || "#ffd35a")
+      : palette[0];
+    const uiAccent2 = state.settings.staticColors
+      ? (state.settings.lootColor || state.settings.mapColor || "#ff9f1c")
+      : palette[1];
 
-    document.documentElement.style.setProperty("--lp-accent", palette[0]);
-    document.documentElement.style.setProperty("--lp-accent2", palette[1]);
+    state.settings.accent = uiAccent;
+    state.settings.accent2 = uiAccent2;
+
+    document.documentElement.style.setProperty("--lp-accent", uiAccent);
+    document.documentElement.style.setProperty("--lp-accent2", uiAccent2);
 
     const setSeries = (prefix, colors) => {
       document.documentElement.style.setProperty(`--lp-${prefix}1`, colors[0]);
