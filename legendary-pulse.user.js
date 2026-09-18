@@ -2,7 +2,7 @@
 // @name         Legendary Pulse
 // @namespace    https://margonem.pl/
 // @namespace    https://margonem.com/
-// @version      1.10.0
+// @version      1.10.1
 // @description  Notyfikator legend
 // @author       Teriash
 // @updateURL    https://github.com/Teriash/legendary-pulse/raw/refs/heads/main/legendary-pulse.user.js
@@ -1735,47 +1735,57 @@
 
     if (!ids.length) return null;
 
-    const lootWindow = document.querySelector(".loot-window");
-    if (!lootWindow) return null;
+    const lootWindows = [...document.querySelectorAll(".loot-window")].filter(lootWindow => {
+      const rect = lootWindow.getBoundingClientRect();
+      const style = getComputedStyle(lootWindow);
+      return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden";
+    });
 
-    for (const id of ids) {
-      const safe = window.CSS?.escape
-        ? CSS.escape(id)
-        : id.replace(/["\\]/g, "\\$&");
+    for (const lootWindow of lootWindows) {
+      for (const id of ids) {
+        const safe = window.CSS?.escape
+          ? CSS.escape(id)
+          : id.replace(/["\\]/g, "\\$&");
 
-      const selectors = [
-        `.loot-item-wrapper-${safe}`,
-        `.loot-item[data-id="${safe}"]`,
-        `.loot-item[data-item-id="${safe}"]`,
-        `.loot-item[data-itemid="${safe}"]`,
-        `[data-id="${safe}"].loot-item`,
-        `[data-item-id="${safe}"].loot-item`,
-        `[data-id="${safe}"].slot`,
-        `[data-item-id="${safe}"].slot`
-      ];
+        const selectors = [
+          `.loot-item-wrapper-${safe}`,
+          `.loot-item[data-id="${safe}"]`,
+          `.loot-item[data-item-id="${safe}"]`,
+          `.loot-item[data-itemid="${safe}"]`,
+          `[data-id="${safe}"].loot-item`,
+          `[data-item-id="${safe}"].loot-item`,
+          `[data-id="${safe}"].slot`,
+          `[data-item-id="${safe}"].slot`
+        ];
 
-      for (const selector of selectors) {
-        const found = lootWindow.querySelector(selector);
-        if (!found) continue;
+        for (const selector of selectors) {
+          const found = lootWindow.querySelector(selector);
+          if (!found) continue;
 
-        return (
-          found.closest(`[class*="loot-item-wrapper-"]`) ||
-          found.closest(".loot-item") ||
-          found
-        );
-      }
+          return (
+            found.closest(`[class*="loot-item-wrapper-"]`) ||
+            found.closest(".loot-item") ||
+            found
+          );
+        }
 
-      const wrappers = lootWindow.querySelectorAll('[class*="loot-item-wrapper-"]');
-      for (const wrapper of wrappers) {
-        const className = String(wrapper.className || "");
-        const match = className.match(/(?:^|\s)loot-item-wrapper-(\d+)(?:\s|$)/);
-        if (match && match[1] === id) {
-          return wrapper;
+        const wrappers = lootWindow.querySelectorAll('[class*="loot-item-wrapper-"]');
+        for (const wrapper of wrappers) {
+          const className = String(wrapper.className || "");
+          const match = className.match(/(?:^|\s)loot-item-wrapper-([^\s]+)(?:\s|$)/);
+          if (match && match[1] === id) {
+            return wrapper;
+          }
         }
       }
     }
 
     return null;
+  }
+
+  function findLootWindowForLegend(item) {
+    const element = findExactLegendLootElement(item);
+    return element?.closest?.(".loot-window") || null;
   }
 
   function getLegendBurstTarget(item) {
@@ -2447,9 +2457,10 @@
 
   function restartLegendAnimationsTogether() {
     const flash = document.getElementById("lp-screen-flash");
-    const lootWindow = findLootWindow();
+    const currentItem = window.__lpCurrentLegendItem || {};
+    const itemElement = findExactLegendLootElement(currentItem);
+    const lootWindow = itemElement?.closest?.(".loot-window") || null;
     const borderWindow = getLootBorderWindow(lootWindow);
-    const itemElement = findLootItemElement(window.__lpCurrentLegendItem || {});
     const slot = itemElement?.querySelector?.(".slot");
 
     const animated = [flash, borderWindow, itemElement, slot].filter(Boolean);
@@ -2504,7 +2515,7 @@
 
     const startedAt = Date.now();
     const hardStopAt = startedAt + 5 * 60 * 1000;
-    let lootWasVisible = false;
+    let legendWasVisible = false;
     let missingTicks = 0;
 
     const update = () => {
@@ -2513,10 +2524,11 @@
         return;
       }
 
-      const lootWindow = findLootWindow();
+      const legendElement = findExactLegendLootElement(item);
+      const lootWindow = legendElement?.closest?.(".loot-window") || null;
 
-      if (lootWindow) {
-        lootWasVisible = true;
+      if (lootWindow && legendElement) {
+        legendWasVisible = true;
         missingTicks = 0;
 
         const remainingMs = parseLootRemainingMs(lootWindow);
@@ -2538,7 +2550,7 @@
         }
 
         const acceptControl = lootWindow.querySelector(".accept-button .button, .accept-button");
-        if (lootWasVisible && !acceptControl) {
+        if (!acceptControl) {
           stopLootTimedEffects();
           return;
         }
@@ -2551,10 +2563,22 @@
           }
         }
 
+        hideLootWindowGlow();
         showLootWindowGlow(lootWindow);
 
         if (state.settings.itemGlow) {
-          glowLootItemPersistent(item);
+          for (const element of state.activeGlowElements) {
+            if (element !== legendElement) {
+              element.classList.remove("lp-loot-glow");
+              element.style.removeProperty("animation");
+              element.style.removeProperty("animation-delay");
+              element.style.removeProperty("filter");
+              element.style.removeProperty("box-shadow");
+            }
+          }
+          state.activeGlowElements.clear();
+          legendElement.classList.add("lp-loot-glow");
+          state.activeGlowElements.add(legendElement);
         }
 
         if (!state.__animationsSynced) {
@@ -2567,19 +2591,19 @@
           Date.now() >= state.lootEffectDeadline
         ) {
           stopLootTimedEffects();
-          return;
         }
 
         return;
       }
 
       missingTicks++;
+      hideLootWindowGlow();
 
-      if (!lootWasVisible && Date.now() - startedAt < 2000) {
+      if (!legendWasVisible && Date.now() - startedAt < 2000) {
         return;
       }
 
-      if (lootWasVisible ? missingTicks >= 2 : missingTicks >= 10) {
+      if (legendWasVisible ? missingTicks >= 2 : missingTicks >= 10) {
         stopLootTimedEffects();
       }
     };
